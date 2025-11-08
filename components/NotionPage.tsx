@@ -23,7 +23,7 @@ import { searchNotion } from '@/lib/search-notion'
 import { useDarkMode } from '@/lib/use-dark-mode'
 
 import { Footer } from './Footer'
-import { GitHubShareButton } from './GitHubShareButton'
+// import { GitHubShareButton } from './GitHubShareButton'
 import { Loading } from './Loading'
 import { NotionPageHeader } from './NotionPageHeader'
 import { Page404 } from './Page404'
@@ -247,6 +247,16 @@ export function NotionPage({
 
   const footer = React.useMemo(() => <Footer />, [])
 
+  React.useEffect(() => {
+    if (!config.isServer) {
+      // add important objects to the window global for easy debugging
+      const g = window as any
+      g.pageId = pageId
+      g.recordMap = recordMap
+      g.block = block
+    }
+  }, [pageId, recordMap, block])
+
   if (router.isFallback) {
     return <Loading />
   }
@@ -264,16 +274,6 @@ export function NotionPage({
     rootNotionPageId: site.rootNotionPageId,
     recordMap
   })
-
-  React.useEffect(() => {
-    if (!config.isServer) {
-      // add important objects to the window global for easy debugging
-      const g = window as any
-      g.pageId = pageId
-      g.recordMap = recordMap
-      g.block = block
-    }
-  }, [pageId, recordMap, block])
 
   const canonicalPageUrl = config.isDev
     ? undefined
