@@ -6,8 +6,6 @@ services:
       args:
       - REDIS_HOST=${REDIS_HOST}
       - REDIS_PASSWORD=${REDIS_PASSWORD}
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
