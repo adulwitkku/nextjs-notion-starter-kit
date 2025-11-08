@@ -35,7 +35,7 @@ export function FooterImpl() {
 
   return (
     <footer className={styles.footer}>
-      <div className={styles.copyright}>
+      {/* <div className={styles.copyright}>
         Copyright {currentYear} {config.author}
       </div>
 
@@ -136,7 +136,7 @@ export function FooterImpl() {
             <FaYoutube />
           </a>
         )}
-      </div>
+      </div> */}
     </footer>
   )
 }
