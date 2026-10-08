@@ -1,47 +1,41 @@
 # syntax=docker.io/docker/dockerfile:1
 
-# *** กำหนด ARG ก่อน builder stage ***
-ARG REDIS_HOST
-ARG REDIS_PASSWORD
+FROM oven/bun AS builder
 
-FROM oven/bun as builder
-
-# Install dependencies only when needed
 WORKDIR /app
 
-# ส่งต่อ environment variables สำหรับ build time
+# ARG ก่อน FROM ใช้กับคำสั่ง FROM ได้เท่านั้น ต้องประกาศซ้ำใน stage นี้
+# ถึงจะรับค่า --build-arg จาก Coolify ได้ตอน bun run build
+ARG REDIS_HOST
+ARG REDIS_PASSWORD
 ENV REDIS_HOST=$REDIS_HOST
 ENV REDIS_PASSWORD=$REDIS_PASSWORD
 
-# คัดลอกไฟล์ package.json และ lockfile (ถ้ามี)
-COPY package.json ./
+COPY package.json bun.lock ./
 
-# ติดตั้ง dependencies
 RUN bun install --frozen-lockfile
 
-# คัดลอกโค้ดทั้งหมดของโปรเจค
 COPY . .
 
-# สร้าง production build
 RUN bun run build
 
-# สร้าง production image
-FROM oven/bun as runner
+FROM oven/bun AS runner
 
 WORKDIR /app
 
-# ตั้งค่าสภาพแวดล้อมเป็น production
 ENV NODE_ENV=production
 
-# คัดลอกไฟล์ที่จำเป็นจาก builder stage
+ARG REDIS_HOST
+ARG REDIS_PASSWORD
+ENV REDIS_HOST=$REDIS_HOST
+ENV REDIS_PASSWORD=$REDIS_PASSWORD
+
 COPY --from=builder /app/next.config.js ./
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
-# เปิด port 3000
 EXPOSE 3000
 
-# รัน Next.js
 CMD ["bun", "run", "start"]
