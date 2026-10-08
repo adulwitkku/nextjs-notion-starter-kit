@@ -8,6 +8,13 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true'
 })
 
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+// Workaround for ensuring that `react` and `react-dom` resolve correctly
+// when using a locally-linked version of `react-notion-x`.
+// @see https://github.com/vercel/next.js/issues/50391
+const reactAlias = path.resolve(dirname, 'node_modules/react')
+const reactDomAlias = path.resolve(dirname, 'node_modules/react-dom')
+
 export default withBundleAnalyzer({
   staticPageGenerationTimeout: 300,
   images: {
@@ -24,16 +31,16 @@ export default withBundleAnalyzer({
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;"
   },
 
+  turbopack: {
+    resolveAlias: {
+      react: reactAlias,
+      'react-dom': reactDomAlias
+    }
+  },
+
   webpack: (config) => {
-    // Workaround for ensuring that `react` and `react-dom` resolve correctly
-    // when using a locally-linked version of `react-notion-x`.
-    // @see https://github.com/vercel/next.js/issues/50391
-    const dirname = path.dirname(fileURLToPath(import.meta.url))
-    config.resolve.alias.react = path.resolve(dirname, 'node_modules/react')
-    config.resolve.alias['react-dom'] = path.resolve(
-      dirname,
-      'node_modules/react-dom'
-    )
+    config.resolve.alias.react = reactAlias
+    config.resolve.alias['react-dom'] = reactDomAlias
     return config
   },
 
